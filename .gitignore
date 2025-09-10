@@ -1,6 +1,5 @@
 # Django settings
-corebanking/settings.py
-
+**/settings.py
 # Python
 __pycache__/
 *.pyc
