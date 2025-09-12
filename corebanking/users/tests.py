@@ -4,6 +4,57 @@ from django.urls import reverse
 from rest_framework import status
 from .models import CustomUser
 
+class UserDeleteTest(APITestCase):
+    def setUp(self):
+        self.user = CustomUser.objects.create_user(
+            email="login@example.com",
+            full_name="Login User",
+            password="password123"
+        )
+        login_url = reverse('login')
+        data = {
+            'email': 'login@example.com',
+            'password':'password123'
+        }
+        response = self.client.post(login_url,data,format='json')
+        self.client.cookies['access_token'] = response.cookies.get('access_token').value
+        self.client.cookies['refresh_token'] = response.cookies.get('refresh_token').value
+    def test_user_can_delete_account(self):
+        delete_url = reverse('profile_delete')
+        response = self.client.delete(delete_url)
+        self.assertEqual(response.data['message'], 'User Profile Successfuly deleted')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(CustomUser.objects.filter(email ='login@example.com').exists())
+        self.assertEqual(response.cookies.get('access_token').value,'')
+        self.assertEqual(response.cookies.get('refresh_token').value,'')
+
+class UserProfileUpdateTest(APITestCase):
+    def setUp(self):
+        self.user = CustomUser.objects.create_user(
+            email="login@example.com",
+            full_name="Login User",
+            password="password123"
+        )
+        login_url = reverse('login')
+        data = {
+            'email': 'login@example.com',
+            'password':'password123'
+        }
+        response = self.client.post(login_url,data,format='json')
+        self.client.cookies['access_token'] = response.cookies.get('access_token').value
+        self.client.cookies['refresh_token'] = response.cookies.get('refresh_token').value
+    def test_user_can_update_profile(self):
+        update_profile_url = reverse('profile_update')
+        data = {
+            'full_name': 'Profile User',
+            'password':'newpassword123'
+        }
+        response =self.client.put(update_profile_url,data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['full_name'],'Profile User')
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password('newpassword123'))
+
 class UserRegistrationTest(APITestCase):
     def test_user_can_register(self):
         url = reverse('register')

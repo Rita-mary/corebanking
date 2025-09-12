@@ -1,7 +1,7 @@
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated , AllowAny
 from django.contrib.auth import get_user_model
-from .serializers import RegisterSerializer, UserSerializer, CustomTokenObtainPairSerializer
+from .serializers import RegisterSerializer, UserSerializer, CustomTokenObtainPairSerializer, UpdateProfileSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.conf import settings
 import datetime
@@ -10,6 +10,26 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from .authentication import CookieJWTAuthentication
+
+class DeleteAccountView(APIView):
+    permission_classes =[IsAuthenticated]
+    authentication_classes= [CookieJWTAuthentication]
+
+    def delete(self,request):
+        user = self.request.user
+        user.delete()
+        response = Response({'message': 'User Profile Successfuly deleted'}, status= status.HTTP_200_OK)
+        response.delete_cookie('access_token')
+        response.delete_cookie('refresh_token')
+        return response
+
+class UpdateProfileView(generics.UpdateAPIView):
+    serializer_class = UpdateProfileSerializer
+    permission_classes =[IsAuthenticated]
+    authentication_classes=[CookieJWTAuthentication]
+
+    def get_object(self):
+        return self.request.user
 
 class RefreshTokenView(APIView):
     def post(self, request, *args, **kwargs):
@@ -86,6 +106,11 @@ class LoginView(TokenObtainPairView):
         )
 
         return response
+#     {
+#   "email": "rita@example.com",
+#   "password": "mypassword123"
+# }
+
 #Delete the access and refresh tokens from the cookies
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
