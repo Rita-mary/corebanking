@@ -10,10 +10,17 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from .authentication import CookieJWTAuthentication
+from drf_spectacular.utils import extend_schema
 
 class DeleteAccountView(APIView):
     permission_classes =[IsAuthenticated]
     authentication_classes= [CookieJWTAuthentication]
+
+    @extend_schema(
+        tags=["User"],
+        summary="Delete user account",
+        description="Deletes the authenticated user’s account permanently."
+    )
 
     def delete(self,request):
         user = self.request.user
@@ -22,7 +29,12 @@ class DeleteAccountView(APIView):
         response.delete_cookie('access_token')
         response.delete_cookie('refresh_token')
         return response
-
+    
+@extend_schema(
+        tags=["User"],
+        summary="Update user profile",
+        description="Updates full_name , or password for the authenticated user."
+    )
 class UpdateProfileView(generics.UpdateAPIView):
     serializer_class = UpdateProfileSerializer
     permission_classes =[IsAuthenticated]
@@ -32,6 +44,11 @@ class UpdateProfileView(generics.UpdateAPIView):
         return self.request.user
 
 class RefreshTokenView(APIView):
+    @extend_schema(
+        tags=["Authentication"],
+        summary="Refresh token",
+        description="Gets new access token with the existing refresh token."
+    )
     def post(self, request, *args, **kwargs):
         refresh_token = request.COOKIES.get("refresh_token")
         if refresh_token is None:
@@ -59,11 +76,17 @@ User = get_user_model()
 
 
 #  Registration
+@extend_schema(
+        tags=["Authentication"],
+        summary="Register a new user",
+        description="Creates a new user account with email, full name, and password."
+    )
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = [AllowAny]
     serializer_class = RegisterSerializer
     authentication_classes = []
+    
 
 
 #  Login
@@ -72,6 +95,12 @@ class RegisterView(generics.CreateAPIView):
 class LoginView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
     authentication_classes = []
+
+    @extend_schema(
+        tags=["Authentication"],
+        summary="Login user",
+        description="Logs in a user and sets access and refresh tokens"
+    )
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -115,6 +144,11 @@ class LoginView(TokenObtainPairView):
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [CookieJWTAuthentication]
+    @extend_schema(
+        tags=["Authentication"],
+        summary="Logout user",
+        description="Logs out the authenticated user by clearing cookies."
+    )
     def post(self,request,*args,**kwargs):
         response = Response({'message':'User successfully logged out'})
         response.delete_cookie('access_token')
@@ -122,9 +156,15 @@ class LogoutView(APIView):
         return response 
 
 #  Profile (Authenticated users only)
+@extend_schema(
+        tags=["User"],
+        summary="Gets user profile",
+        description="Gets the profile of the logged in user."
+    )
 class ProfileView(generics.RetrieveAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
+
 
     def get_object(self):
         # Return the currently logged-in user

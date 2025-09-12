@@ -41,7 +41,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return data
 
 class UpdateProfileSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only = True, required= False, min_length = 8)
+    password = serializers.CharField(write_only = True, required= False, min_length = 8,)
     class Meta:
         model = User
         fields= ('full_name','password')
