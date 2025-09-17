@@ -14,6 +14,11 @@ class Account(models.Model):
     account_number = models.CharField(max_length=12, unique=True)
     account_type = models.CharField(choices=Account_type, max_length=10)
     balance = models.DecimalField(max_digits=12,decimal_places=2, default=0.00)
+    status = models.CharField(
+    max_length=10,
+    choices=[("active", "Active"), ("inactive", "Inactive"), ("suspended", "Suspended")],
+    default="active"
+)
     created_at= models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -28,7 +33,10 @@ class Transaction(models.Model):
     id=models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="transaction")
     transaction_type= models.CharField(choices=Transaction_type, max_length=12)
-    destination_account= models.ForeignKey(Account, on_delete=models.CASCADE, related_name="incoming_transaction", null=True, blank=True)
+    destination_account= models.ForeignKey(
+        Account, on_delete=models.CASCADE,
+        related_name="incoming_transaction", null=True, blank=True
+    )
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     description = models.TextField(blank=True, null=True, max_length= 50)
     created_at = models.DateTimeField(auto_now_add= True)
