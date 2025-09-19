@@ -1,4 +1,9 @@
 from.models import Account
+import uuid
+
+def generate_reference():
+    return f"TXN-{uuid.uuid4().hex[:12].upper()}"
+
 
 def generate_account_number():
     prefix = "228"

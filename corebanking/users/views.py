@@ -88,10 +88,6 @@ class RegisterView(generics.CreateAPIView):
     authentication_classes = []
     
 
-
-#  Login
-# class LoginView(TokenObtainPairView):
-#     serializer_class = CustomTokenObtainPairSerializer
 class LoginView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
     authentication_classes = []
@@ -150,7 +146,7 @@ class LogoutView(APIView):
         description="Logs out the authenticated user by clearing cookies."
     )
     def post(self,request,*args,**kwargs):
-        response = Response({'message':'User successfully logged out'})
+        response = Response({'message':f'{self.request.user} successfully logged out'})
         response.delete_cookie('access_token')
         response.delete_cookie('refresh_token')
         return response 
