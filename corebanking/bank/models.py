@@ -38,7 +38,7 @@ class Transaction(models.Model):
     )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    reference = models.CharField(max_length=100, db_index=True, unique=True)
+    reference = models.CharField(max_length=100, db_index=True)
     account = models.ForeignKey(
         "Account", on_delete=models.CASCADE, related_name="transactions"
     )

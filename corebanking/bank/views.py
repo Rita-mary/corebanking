@@ -56,18 +56,18 @@ class TransferView(APIView):
         Perform an internal transfer between two accounts (double-entry).
         Expects JSON:
         {
-          "sender_account": "<uuid>",
-          "destination_account": "<uuid>",
-          "amount": "100.00",
-          "description": "optional"
+          "sender_account": "2280000002",
+          "destination_account": "2280000001",
+          "amount": "5000.00",
+          "description": "Payment for GoTv"
         }
         """
-        serializer = TransferSerializer(data = request.data)
+        serializer = TransferSerializer(data = request.data, context = {"request": request})
         serializer.is_valid(raise_exception = True)
         data = serializer.validated_data
 
-        sender = data['sender_obj']
-        dest = data['destination_obj']
+        sender = data['_sender_obj']
+        dest = data['_destination_obj']
         amount= data['amount']
         description = data.get('description', '')
         try:
@@ -75,8 +75,8 @@ class TransferView(APIView):
              # Order by id ensures both concurrent transfers lock in same order.
             with db_transaction.atomic():
                 if str(sender.id)< str(dest.id):
-                    sender = sender.__class__.objects.select_for_update.get(id = sender.id)
-                    dest = dest.__class__.objects.select_for_update.get(id = dest.id)
+                    sender = sender.__class__.objects.select_for_update().get(id = sender.id)
+                    dest = dest.__class__.objects.select_for_update().get(id = dest.id)
                 else:
                     dest = dest.__class__.objects.select_for_update.get(id = dest.id)
                     sender = sender.__class__.objects.select_for_update.get(id = sender.id)
@@ -132,8 +132,8 @@ class TransferView(APIView):
                     "debit_id": str(debit.id),
                     "credit_id": str(credit.id),
                     "amount": str(amount),
-                    "from_account": str(sender.id),
-                    "to_account": str(dest.id),
+                    "from_account": str(sender.account_number),
+                    "to_account": str(dest.account_number),
                 }, status=status.HTTP_200_OK)
 
                 
